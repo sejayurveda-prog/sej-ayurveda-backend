@@ -1,32 +1,24 @@
-import express from "express";
-import {
-  getDashboardStats,
-  getRecentOrders,
-  getRecentConsultations,
-  getPendingReviews,
-  markConsultationScheduled
-} from "../controllers/admin.controller.js";
+import jwt from "jsonwebtoken";
+import ENV from "../config/env.js";
 
-import { protectAdmin } from "../middlewares/admin.middleware.js";
+export const protectAdmin = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-const router = express.Router();
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token missing" });
+    }
 
-/* =========================================================
-   ADMIN DASHBOARD ROUTES (PROTECTED)
-========================================================= */
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, ENV.JWT_SECRET);
 
-router.get("/dashboard", protectAdmin, getDashboardStats);
+    if (decoded.email !== ENV.ADMIN_EMAIL) {
+      return res.status(403).json({ message: "Admin only" });
+    }
 
-router.get("/orders/recent", protectAdmin, getRecentOrders);
-
-router.get("/consultations/recent", protectAdmin, getRecentConsultations);
-
-router.get("/reviews/pending", protectAdmin, getPendingReviews);
-
-router.put(
-  "/consultations/:id/schedule",
-  protectAdmin,
-  markConsultationScheduled
-);
-
-export default router;
+    req.admin = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
