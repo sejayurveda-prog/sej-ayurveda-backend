@@ -1,39 +1,43 @@
-// payments.js  (IMPROVED & FINAL VERSION)
+// payments.js (RENDER SAFE FINAL VERSION)
 
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import ENV from "./env.js";
 
 /* =========================================================
-   RAZORPAY INSTANCE
+   RAZORPAY INSTANCE (SAFE INITIALIZATION)
 ========================================================= */
-export const razorpay = new Razorpay({
-  key_id: ENV.RAZORPAY_KEY_ID,
-  key_secret: ENV.RAZORPAY_KEY_SECRET
-});
+let razorpay = null;
+
+if (ENV.RAZORPAY_KEY_ID && ENV.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: ENV.RAZORPAY_KEY_ID,
+    key_secret: ENV.RAZORPAY_KEY_SECRET
+  });
+}
 
 /* =========================================================
-   BUSINESS RULES (SINGLE SOURCE OF TRUTH)
+   BUSINESS RULES
 ========================================================= */
 export const CONSULTATION_PRICES = ENV.CONSULTATION_PRICES;
 export const ORDER_PARTIAL_AMOUNT = ENV.ORDER_ADVANCE_AMOUNT;
 
 /* =========================================================
-   CALCULATE CONSULTATION AMOUNT (SECURE)
+   CALCULATE CONSULTATION AMOUNT
 ========================================================= */
 export const getConsultationAmount = (type) => {
-  if (!CONSULTATION_PRICES[type]) {
+  if (!CONSULTATION_PRICES?.[type]) {
     throw new Error("Invalid consultation type");
   }
   return CONSULTATION_PRICES[type];
 };
 
 /* =========================================================
-   CALCULATE ORDER PAYMENT (PARTIAL / FULL)
+   CALCULATE ORDER PAYMENT
 ========================================================= */
 export const getOrderPaymentDetails = ({
   totalAmount,
-  paymentType // PARTIAL | FULL
+  paymentType
 }) => {
   if (!totalAmount || totalAmount <= 0) {
     throw new Error("Invalid total amount");
@@ -66,19 +70,21 @@ export const createRazorpayOrder = async ({
   receipt,
   notes = {}
 }) => {
-  try {
-    if (!amount || amount <= 0) {
-      throw new Error("Invalid Razorpay amount");
-    }
+  if (!razorpay) {
+    throw new Error("Razorpay not configured");
+  }
 
-    const order = await razorpay.orders.create({
-      amount: Math.round(amount * 100), // INR → paise
+  if (!amount || amount <= 0) {
+    throw new Error("Invalid Razorpay amount");
+  }
+
+  try {
+    return await razorpay.orders.create({
+      amount: Math.round(amount * 100),
       currency: "INR",
       receipt,
       notes
     });
-
-    return order;
   } catch (error) {
     console.error("❌ Razorpay order error:", error.message);
     throw new Error("Failed to create Razorpay order");
@@ -104,7 +110,7 @@ export const verifyPaymentSignature = ({
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
   const expectedSignature = crypto
-    .createHmac("sha256", ENV.RAZORPAY_KEY_SECRET)
+    .createHmac("sha256", ENV.RAZORPAY_KEY_SECRET || "")
     .update(body)
     .digest("hex");
 
