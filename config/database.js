@@ -3,15 +3,14 @@ import ENV from "./env.js";
 
 /*
   Google Sheets acts as Database
-  This file only initializes & exports the client
+  This file initializes & exports the client
 */
 
-const auth = new google.auth.JWT(
-  ENV.GOOGLE_CLIENT_EMAIL,
-  null,
-  ENV.GOOGLE_PRIVATE_KEY,
-  ["https://www.googleapis.com/auth/spreadsheets"]
-);
+const auth = new google.auth.JWT({
+  email: ENV.GOOGLE_CLIENT_EMAIL,
+  key: ENV.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"), // 🔥 MOST IMPORTANT LINE
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+});
 
 const sheets = google.sheets({
   version: "v4",
