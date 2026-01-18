@@ -1,5 +1,9 @@
 import express from "express";
 
+/* ===========================
+   CONTROLLERS
+=========================== */
+
 /* AUTH CONTROLLER */
 import {
   adminLogin,
@@ -16,9 +20,20 @@ import {
   markConsultationScheduled
 } from "../controllers/admin.controller.js";
 
+/* MIDDLEWARE */
 import { protectAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
+
+/* ===========================
+   ROUTER HEALTH CHECK
+=========================== */
+router.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Admin routes working ✅"
+  });
+});
 
 /* ===========================
    AUTH ROUTES (PUBLIC)
@@ -26,11 +41,14 @@ const router = express.Router();
 router.post("/login", adminLogin);
 
 /* ===========================
-   PROTECTED ROUTES
+   AUTH ROUTES (PROTECTED)
 =========================== */
 router.get("/profile", protectAdmin, adminProfile);
 router.post("/logout", protectAdmin, adminLogout);
 
+/* ===========================
+   ADMIN DATA ROUTES (PROTECTED)
+=========================== */
 router.get("/dashboard", protectAdmin, getDashboardStats);
 router.get("/orders/recent", protectAdmin, getRecentOrders);
 router.get("/consultations/recent", protectAdmin, getRecentConsultations);
