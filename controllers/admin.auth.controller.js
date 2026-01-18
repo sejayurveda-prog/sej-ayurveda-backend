@@ -1,11 +1,4 @@
 import jwt from "jsonwebtoken";
-import ENV from "../config/env.js";
-
-/* ===============================
-   ADMIN CREDENTIALS
-================================ */
-const ADMIN_EMAIL = ENV.ADMIN_EMAIL;
-const ADMIN_PASSWORD = ENV.ADMIN_PASSWORD;
 
 /* ===============================
    GENERATE TOKEN
@@ -13,8 +6,8 @@ const ADMIN_PASSWORD = ENV.ADMIN_PASSWORD;
 const generateToken = () => {
   return jwt.sign(
     { role: "admin" },
-    ENV.JWT_SECRET,
-    { expiresIn: ENV.JWT_EXPIRES_IN }
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN }
   );
 };
 
@@ -32,7 +25,10 @@ export const adminLogin = async (req, res) => {
       });
     }
 
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+    if (
+      email !== process.env.ADMIN_EMAIL ||
+      password !== process.env.ADMIN_PASSWORD
+    ) {
       return res.status(401).json({
         success: false,
         message: "Invalid admin credentials"
@@ -44,12 +40,11 @@ export const adminLogin = async (req, res) => {
     return res.json({
       success: true,
       message: "Admin login successful",
-      data: {
-        token
-      }
+      data: { token }
     });
 
   } catch (error) {
+    console.error("Admin login error:", error);
     return res.status(500).json({
       success: false,
       message: "Admin login failed"
@@ -64,7 +59,7 @@ export const adminProfile = async (req, res) => {
   res.json({
     success: true,
     data: {
-      email: ADMIN_EMAIL,
+      email: process.env.ADMIN_EMAIL,
       role: "admin"
     }
   });
