@@ -14,7 +14,7 @@ import {
 /* =========================================================
    GOOGLE SHEET CONFIG
 ========================================================= */
-const SHEET_NAME = "Consultations";
+const SHEET_NAME = "Consultations"; // 👈 exact sheet tab name
 
 /* =========================================================
    CREATE CONSULTATION (FULL PREPAID)
@@ -29,6 +29,7 @@ export const createConsultation = async (req, res) => {
       problem
     } = req.body;
 
+    // ✅ Validation
     if (!name || !phone || !consultationType || !problem) {
       return res.status(400).json({
         success: false,
@@ -36,11 +37,11 @@ export const createConsultation = async (req, res) => {
       });
     }
 
-    // Backend decides amount (SECURE)
+    // ✅ Secure amount calculation (backend only)
     const amount = getConsultationAmount(consultationType);
     const consultationId = uuidv4();
 
-    // Create Razorpay order
+    // ✅ Create Razorpay Order
     const razorpayOrder = await createRazorpayOrder({
       amount,
       receipt: `consult_${consultationId}`,
@@ -50,7 +51,7 @@ export const createConsultation = async (req, res) => {
       }
     });
 
-    // Save consultation (initial)
+    // ✅ Save initial consultation to Google Sheet
     const row = {
       id: consultationId,
       Name: name,
@@ -68,16 +69,17 @@ export const createConsultation = async (req, res) => {
 
     await addRow(SHEET_NAME, row);
 
-    res.json({
+    // ✅ Final response
+    return res.json({
       success: true,
       message: "Consultation created. Proceed to payment.",
-      razorpayOrder,
-      consultationId
+      consultationId,
+      razorpayOrder
     });
 
   } catch (error) {
-    console.error("Create consultation error:", error.message);
-    res.status(500).json({
+    console.error("❌ Create consultation error:", error);
+    return res.status(500).json({
       success: false,
       message: "Failed to create consultation"
     });
@@ -127,14 +129,14 @@ export const verifyConsultationPayment = async (req, res) => {
       Status: "PAID"
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Consultation payment verified"
     });
 
   } catch (error) {
-    console.error("Verify consultation payment error:", error.message);
-    res.status(500).json({
+    console.error("❌ Verify payment error:", error);
+    return res.status(500).json({
       success: false,
       message: "Payment verification failed"
     });
@@ -151,13 +153,13 @@ export const getConsultationsByPhone = async (req, res) => {
     const rows = await getAllRows(SHEET_NAME);
     const userConsults = rows.filter(r => r.Phone === phone);
 
-    res.json({
+    return res.json({
       success: true,
       data: userConsults
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch consultations"
     });
@@ -171,13 +173,13 @@ export const getAllConsultations = async (req, res) => {
   try {
     const rows = await getAllRows(SHEET_NAME);
 
-    res.json({
+    return res.json({
       success: true,
       data: rows
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch consultations"
     });
@@ -197,13 +199,13 @@ export const updateConsultationStatus = async (req, res) => {
       ScheduledDateTime: scheduledDateTime || ""
     });
 
-    res.json({
+    return res.json({
       success: true,
       message: "Consultation updated successfully"
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update consultation"
     });
