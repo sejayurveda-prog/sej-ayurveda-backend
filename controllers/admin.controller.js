@@ -133,7 +133,7 @@ export const getPendingReviews = async (req, res) => {
 
 /* =========================================================
    SCHEDULE CONSULTATION (ADMIN)
-   PUT /api/admin/consultation/:id/schedule
+   PUT /api/admin/consultations/:id/schedule
 ========================================================= */
 export const markConsultationScheduled = async (req, res) => {
   try {
