@@ -14,8 +14,10 @@ import {
   getRecentConsultations,
   getPendingReviews,
   markConsultationScheduled,
-  testMail
+  testMail,
+  testMailPublic
 } from "../controllers/admin.controller.js";
+
 
 /* MIDDLEWARE */
 import { protectAdmin } from "../middlewares/auth.middleware.js";
@@ -46,5 +48,6 @@ router.put(
 
 /* ✅ TEST MAIL (TEMP) */
 router.get("/test-mail", protectAdmin, testMail);
+router.get("/test-mail-public", testMailPublic);
 
 export default router;
