@@ -165,3 +165,28 @@ export const markConsultationScheduled = async (req, res) => {
     });
   }
 };
+/* =========================================================
+   TEST MAIL (ADMIN)
+   GET /api/admin/test-mail
+========================================================= */
+export const testMail = async (req, res, next) => {
+  try {
+    await sendMail({
+      to: "sejayurveda@gmail.com",
+      subject: "SEJ Ayurveda – Mail Test ✅",
+      html: `
+        <h2>Mail system working 🚀</h2>
+        <p>This mail is sent from <b>Render deployed backend</b>.</p>
+      `
+    });
+
+    return res.json({
+      success: true,
+      message: "Test mail sent successfully"
+    });
+
+  } catch (error) {
+    console.error("Test mail error:", error.message);
+    next(error);
+  }
+};
