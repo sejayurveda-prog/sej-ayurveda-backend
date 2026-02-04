@@ -190,3 +190,22 @@ export const testMail = async (req, res, next) => {
     next(error);
   }
 };
+export const testMailPublic = async (req, res) => {
+  try {
+    await sendMail({
+      to: "sejayurveda@gmail.com",
+      subject: "SEJ Public Mail Test ✅",
+      html: "<h2>Mail working (Public Test) 🚀</h2>"
+    });
+
+    res.json({
+      success: true,
+      message: "Public test mail sent"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Mail failed"
+    });
+  }
+};
