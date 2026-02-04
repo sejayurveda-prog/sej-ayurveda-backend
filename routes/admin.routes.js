@@ -1,9 +1,5 @@
 import express from "express";
 
-/* ===========================
-   CONTROLLERS
-=========================== */
-
 /* AUTH CONTROLLER */
 import {
   adminLogin,
@@ -17,7 +13,8 @@ import {
   getRecentOrders,
   getRecentConsultations,
   getPendingReviews,
-  markConsultationScheduled
+  markConsultationScheduled,
+  testMail
 } from "../controllers/admin.controller.js";
 
 /* MIDDLEWARE */
@@ -25,30 +22,17 @@ import { protectAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-/* ===========================
-   ROUTER HEALTH CHECK
-=========================== */
+/* HEALTH */
 router.get("/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "Admin routes working ✅"
-  });
+  res.json({ success: true });
 });
 
-/* ===========================
-   AUTH ROUTES (PUBLIC)
-=========================== */
+/* AUTH */
 router.post("/login", adminLogin);
-
-/* ===========================
-   AUTH ROUTES (PROTECTED)
-=========================== */
 router.get("/profile", protectAdmin, adminProfile);
 router.post("/logout", protectAdmin, adminLogout);
 
-/* ===========================
-   ADMIN DATA ROUTES (PROTECTED)
-=========================== */
+/* DATA */
 router.get("/dashboard", protectAdmin, getDashboardStats);
 router.get("/orders/recent", protectAdmin, getRecentOrders);
 router.get("/consultations/recent", protectAdmin, getRecentConsultations);
@@ -59,5 +43,8 @@ router.put(
   protectAdmin,
   markConsultationScheduled
 );
+
+/* ✅ TEST MAIL (TEMP) */
+router.get("/test-mail", protectAdmin, testMail);
 
 export default router;
